@@ -48,7 +48,7 @@ func (a *ShopOrderApi) CancelOrder(c *gin.Context) {
 	}
 	if err := shopOrderService.CancelOrder(orderNo, userID); err != nil {
 		global.GVA_LOG.Error("取消订单失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("取消订单失败", c)
 	} else {
 		response.OkWithMessage("取消成功", c)
 	}
@@ -68,7 +68,7 @@ func (a *ShopOrderApi) ConfirmReceive(c *gin.Context) {
 	}
 	if err := shopOrderService.ConfirmReceive(orderNo, userID); err != nil {
 		global.GVA_LOG.Error("确认收货失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("确认收货失败", c)
 	} else {
 		response.OkWithMessage("确认收货成功", c)
 	}
