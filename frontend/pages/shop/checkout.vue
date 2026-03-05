@@ -240,6 +240,7 @@ const handleSubmitOrder = async () => {
 
   submitting.value = true
   try {
+    /** @type {any} */
     const payload = {
       addressId: selectedAddressId.value,
       remark: remark.value,
@@ -262,6 +263,8 @@ const handleSubmitOrder = async () => {
       const order = res.data.order
       router.replace(`/shop/order/${order.orderNo}`)
     }
+  } catch (err) {
+    ElMessage.error('订单提交失败，请重试')
   } finally {
     submitting.value = false
   }

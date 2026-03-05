@@ -26,5 +26,5 @@ export function formatTimeToStr(times, pattern) {
   if (pattern) {
     d = new Date(times).Format(pattern)
   }
-  return d.toLocaleString()
+  return d
 }

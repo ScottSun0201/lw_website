@@ -15,8 +15,9 @@ var shopFavoriteService = service.ServiceGroupApp.ShopServiceGroup.ShopFavoriteS
 
 func (a *ShopFavoriteApi) AddFavorite(c *gin.Context) {
 	var req shopReq.ShopFavoriteReq
-	if err := c.ShouldBindJSON(&req); err != nil { response.FailWithMessage(err.Error(), c); return }
+	if err := c.ShouldBindJSON(&req); err != nil { response.FailWithMessage("参数错误", c); return }
 	userID := utils.GetUserID(c)
+	if userID == 0 { response.FailWithMessage("请先登录", c); return }
 	if err := shopFavoriteService.AddFavorite(userID, req.SpuID); err != nil {
 		global.GVA_LOG.Error("收藏失败!", zap.Error(err)); response.FailWithMessage(err.Error(), c)
 	} else { response.OkWithMessage("收藏成功", c) }
@@ -24,8 +25,9 @@ func (a *ShopFavoriteApi) AddFavorite(c *gin.Context) {
 
 func (a *ShopFavoriteApi) RemoveFavorite(c *gin.Context) {
 	var req shopReq.ShopFavoriteReq
-	if err := c.ShouldBindJSON(&req); err != nil { response.FailWithMessage(err.Error(), c); return }
+	if err := c.ShouldBindJSON(&req); err != nil { response.FailWithMessage("参数错误", c); return }
 	userID := utils.GetUserID(c)
+	if userID == 0 { response.FailWithMessage("请先登录", c); return }
 	if err := shopFavoriteService.RemoveFavorite(userID, req.SpuID); err != nil {
 		global.GVA_LOG.Error("取消收藏失败!", zap.Error(err)); response.FailWithMessage(err.Error(), c)
 	} else { response.OkWithMessage("取消收藏成功", c) }
@@ -33,8 +35,9 @@ func (a *ShopFavoriteApi) RemoveFavorite(c *gin.Context) {
 
 func (a *ShopFavoriteApi) GetFavoriteList(c *gin.Context) {
 	var info shopReq.ShopFavoriteSearch
-	if err := c.ShouldBindQuery(&info); err != nil { response.FailWithMessage(err.Error(), c); return }
+	if err := c.ShouldBindQuery(&info); err != nil { response.FailWithMessage("参数错误", c); return }
 	userID := utils.GetUserID(c)
+	if userID == 0 { response.FailWithMessage("请先登录", c); return }
 	if list, total, err := shopFavoriteService.GetFavoriteList(userID, info); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err)); response.FailWithMessage("获取失败", c)
 	} else { response.OkWithDetailed(response.PageResult{List: list, Total: total, Page: info.Page, PageSize: info.PageSize}, "获取成功", c) }

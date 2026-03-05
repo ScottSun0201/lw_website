@@ -18,13 +18,17 @@ var shopAddressService = service.ServiceGroupApp.ShopServiceGroup.ShopAddressSer
 func (a *ShopAddressApi) CreateAddress(c *gin.Context) {
 	var address shop.ShopUserAddress
 	if err := c.ShouldBindJSON(&address); err != nil {
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("参数错误", c)
 		return
 	}
 	address.UserID = utils.GetUserID(c)
+	if address.UserID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if err := shopAddressService.CreateAddress(&address); err != nil {
 		global.GVA_LOG.Error("创建失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("创建失败", c)
 	} else {
 		response.OkWithMessage("创建成功", c)
 	}
@@ -42,9 +46,13 @@ func (a *ShopAddressApi) DeleteAddress(c *gin.Context) {
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if err := shopAddressService.DeleteAddress(uint(id), userID); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("删除失败", c)
 	} else {
 		response.OkWithMessage("删除成功", c)
 	}
@@ -53,13 +61,17 @@ func (a *ShopAddressApi) DeleteAddress(c *gin.Context) {
 func (a *ShopAddressApi) UpdateAddress(c *gin.Context) {
 	var address shop.ShopUserAddress
 	if err := c.ShouldBindJSON(&address); err != nil {
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("参数错误", c)
 		return
 	}
 	address.UserID = utils.GetUserID(c)
+	if address.UserID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if err := shopAddressService.UpdateAddress(address); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("更新失败", c)
 	} else {
 		response.OkWithMessage("更新成功", c)
 	}
@@ -67,6 +79,10 @@ func (a *ShopAddressApi) UpdateAddress(c *gin.Context) {
 
 func (a *ShopAddressApi) GetAddressList(c *gin.Context) {
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if list, err := shopAddressService.GetAddressList(userID); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
@@ -87,9 +103,13 @@ func (a *ShopAddressApi) SetDefaultAddress(c *gin.Context) {
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if err := shopAddressService.SetDefaultAddress(uint(id), userID); err != nil {
 		global.GVA_LOG.Error("设置默认地址失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("设置默认地址失败", c)
 	} else {
 		response.OkWithMessage("设置成功", c)
 	}

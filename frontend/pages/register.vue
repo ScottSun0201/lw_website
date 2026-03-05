@@ -72,6 +72,11 @@ const registerFunc = async ()=>{
     return
   }
 
+  const passwordReg = /^(?=.*[a-zA-Z])(?=.*\d).{6,20}$/
+  if (!passwordReg.test(formInfo.value.password)) {
+    ElMessage.error("密码需包含字母和数字")
+    return
+  }
 
   if (formInfo.value.password !== formInfo.value.rePassword) {
     ElMessage.error("两次密码不一致")

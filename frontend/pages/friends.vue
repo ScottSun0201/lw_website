@@ -5,7 +5,7 @@
   </div>
 </template>
 <script setup>
-import {getCmsFriendInfo, getCmsFriendList} from "~/api/firends.js";
+import {getCmsFriendInfo, getCmsFriendList} from "~/api/friends.js";
 
 const {data} = useAsyncData("friends",async () => {
   const [infoRes,listRes] = await Promise.all([

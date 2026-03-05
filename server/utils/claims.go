@@ -1,12 +1,14 @@
 package utils
 
 import (
+	"net"
+	"net/http"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	systemReq "github.com/flipped-aurora/gin-vue-admin/server/model/system/request"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid/v5"
-	"net"
 )
 
 func ClearToken(c *gin.Context) {
@@ -17,9 +19,11 @@ func ClearToken(c *gin.Context) {
 	}
 
 	if net.ParseIP(host) != nil {
-		c.SetCookie("x-token", "", -1, "/", "", false, false)
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("x-token", "", -1, "/", "", true, false)
 	} else {
-		c.SetCookie("x-token", "", -1, "/", host, false, false)
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("x-token", "", -1, "/", host, true, false)
 	}
 }
 
@@ -31,9 +35,11 @@ func SetToken(c *gin.Context, token string, maxAge int) {
 	}
 
 	if net.ParseIP(host) != nil {
-		c.SetCookie("x-token", token, maxAge, "/", "", false, false)
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("x-token", token, maxAge, "/", "", true, false)
 	} else {
-		c.SetCookie("x-token", token, maxAge, "/", host, false, false)
+		c.SetSameSite(http.SameSiteLaxMode)
+		c.SetCookie("x-token", token, maxAge, "/", host, true, false)
 	}
 }
 

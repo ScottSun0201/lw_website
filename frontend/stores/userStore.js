@@ -25,19 +25,25 @@ export const useUserStore = defineStore('user', () => {
         }
     }
 
+    let infoAbort = null
     const setToken = (newToken) => {
-        if(newToken){
-            getInfo()
+        if (infoAbort) {
+            infoAbort = null
         }
         token.value = newToken
+        if (newToken) {
+            infoAbort = true
+            getInfo().finally(() => { infoAbort = null })
+        }
     }
 
     const logout = async () => {
         const res = await jsonInBlacklist()
         if(res.code === 0){
-            router.push({name: 'index'})
             cookie.remove('x-token')
-            setToken('')
+            token.value = ''
+            userInfo.value = { username: '', nickname: '', about: '', avatar: '', firstName: '', lastName: '', email: '' }
+            router.push({name: 'index'})
         }
     }
 

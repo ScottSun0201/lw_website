@@ -57,10 +57,10 @@ export async function request(url,options) {
 
         ElMessage({
             showClose: true,
-            message: err,
+            message: err?.message || '请求失败',
             type: 'error'
         })
-        return err
+        return { code: err?.status || -1, msg: err?.message || '请求失败', data: null }
     }
   }
 }

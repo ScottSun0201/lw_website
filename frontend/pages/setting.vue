@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { PhotoIcon, UserCircleIcon } from '@heroicons/vue/24/solid'
+import { UserCircleIcon } from '@heroicons/vue/24/solid'
 import {useUserStore} from "~/stores/userStore.js";
 
 definePageMeta({ middleware: 'auth' })
@@ -102,6 +102,16 @@ const changeAvatar = () => {
 
 const uploadAvatar = async (e) => {
   const file = e.target.files[0]
+  if (!file) return
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+  if (!allowedTypes.includes(file.type)) {
+    ElMessage.error('仅支持 JPG、PNG、GIF、WebP 格式的图片')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    ElMessage.error('图片大小不能超过 5MB')
+    return
+  }
   const formData = new FormData()
   formData.append('file', file)
   const res = await upload(formData,{noSave:"1"})
@@ -114,8 +124,17 @@ const uploadAvatar = async (e) => {
 }
 
 const save = async () => {
-    if (userStore.userInfo.nickname === "" || userStore.userInfo.about === "" || userStore.userInfo.firstName === "" || userStore.userInfo.lastName === "" || userStore.userInfo.email === "") {
+    if (!userStore.userInfo.nickname?.trim() || !userStore.userInfo.about?.trim() || !userStore.userInfo.firstName?.trim() || !userStore.userInfo.lastName?.trim() || !userStore.userInfo.email?.trim()) {
       ElMessage.error("请填写完整信息")
+      return
+    }
+    const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailReg.test(userStore.userInfo.email.trim())) {
+      ElMessage.error("请输入正确的邮箱格式")
+      return
+    }
+    if (userStore.userInfo.age !== undefined && userStore.userInfo.age !== null && (userStore.userInfo.age < 0 || userStore.userInfo.age > 150)) {
+      ElMessage.error("请输入合理的年龄（0-150）")
       return
     }
   const res = await setClientUser(userStore.userInfo)

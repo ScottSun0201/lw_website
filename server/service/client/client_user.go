@@ -42,7 +42,9 @@ func (clientUserService *ClientUserService) DeleteClientUserByIds(IDs []string) 
 // UpdateClientUser 更新客户端用户记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (clientUserService *ClientUserService) UpdateClientUser(clientUser clientReq.SetClientUser) (err error) {
-	clientUser.Password = utils.BcryptHash(clientUser.Password)
+	if clientUser.Password != "" {
+		clientUser.Password = utils.BcryptHash(clientUser.Password)
+	}
 	err = global.GVA_DB.First(&client.ClientUser{}, "id = ?", clientUser.ID).Updates(&clientUser).Error
 	return err
 }

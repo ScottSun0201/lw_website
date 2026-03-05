@@ -66,7 +66,12 @@ const loginFun = async () => {
     ElMessage.success('登录成功')
     const redirect = route.query.redirect
     if (redirect) {
-      router.push(decodeURIComponent(redirect))
+      const decoded = decodeURIComponent(redirect)
+      if (decoded.startsWith('/') && !decoded.startsWith('//')) {
+        router.push(decoded)
+      } else {
+        router.push('/')
+      }
     } else {
       router.push('/')
     }

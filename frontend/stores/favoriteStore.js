@@ -9,7 +9,7 @@ export const useFavoriteStore = defineStore('favorite', () => {
     }
 
     const toggleFavorite = (spuId, val) => {
-        favoriteMap.value[spuId] = val
+        favoriteMap.value = { ...favoriteMap.value, [spuId]: val }
     }
 
     const isFavorite = (spuId) => {

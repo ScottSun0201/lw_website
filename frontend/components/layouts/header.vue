@@ -60,7 +60,7 @@
         <NuxtLink v-if="!userStore.token" :to="{name:'login'}" class="font-semibold leading-6 text-gray-900">登录</NuxtLink>
         <NuxtLink :to="{name:'setting'}" v-else>
           <div  class="flex items-center gap-2 cursor-pointer">
-            <img class="w-12 h-12 object-cover rounded-full" :src="getUrl(userStore.userInfo.avatar)" alt="avatar" />
+            <img class="w-12 h-12 object-cover rounded-full" :src="userStore.userInfo.avatar ? getUrl(userStore.userInfo.avatar) : ''" alt="avatar" @error="(e) => e.target.style.display='none'" />
             <div class="flex flex-col justify-around text-center">
               <div class="text text-gray-700 font-bold">{{userStore.userInfo.nickname}}</div>
               <div class="text-sm text-gray-500">{{userStore.userInfo.firstName}} {{userStore.userInfo.lastName}}</div>

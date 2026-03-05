@@ -14,7 +14,19 @@ const route = useRoute()
 const seoStore = useSeoStore()
 const userStore = useUserStore()
 
-userStore.setToken(cookie.get('x-token') || '')
+const savedToken = cookie.get('x-token') || ''
+if (savedToken) {
+  try {
+    const payload = JSON.parse(atob(savedToken.split('.')[1]))
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      cookie.remove('x-token')
+    } else {
+      userStore.setToken(savedToken)
+    }
+  } catch (e) {
+    userStore.setToken(savedToken)
+  }
+}
 
 const withOutLayoutPaths = ['login','register']
 // 这里创建白名单用于layout的变化，例如本示例中的登录页不需要layout

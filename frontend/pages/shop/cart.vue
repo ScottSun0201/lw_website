@@ -119,7 +119,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCartList, updateCartQuantity, removeFromCart } from '~/api/shop.js'
 import { useCartStore } from '~/stores/cartStore.js'
@@ -181,16 +181,24 @@ const formatSpec = (specData) => {
   }
 }
 
-let quantityTimer = null
+const quantityTimers = new Map()
 const handleQuantityChange = (item, val) => {
-  clearTimeout(quantityTimer)
-  quantityTimer = setTimeout(async () => {
+  if (quantityTimers.has(item.ID)) {
+    clearTimeout(quantityTimers.get(item.ID))
+  }
+  quantityTimers.set(item.ID, setTimeout(async () => {
+    quantityTimers.delete(item.ID)
     const res = await updateCartQuantity({ id: item.ID, quantity: val })
     if (res && res.code !== 0) {
       await loadCart()
     }
-  }, 500)
+  }, 500))
 }
+
+onBeforeUnmount(() => {
+  quantityTimers.forEach(timer => clearTimeout(timer))
+  quantityTimers.clear()
+})
 
 const handleRemove = async (item) => {
   try {

@@ -18,13 +18,17 @@ var shopOrderService = service.ServiceGroupApp.ShopServiceGroup.ShopOrderService
 func (a *ShopOrderApi) CreateOrder(c *gin.Context) {
 	var req shopReq.ShopOrderCreateReq
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("参数错误", c)
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if order, err := shopOrderService.CreateOrder(userID, req); err != nil {
 		global.GVA_LOG.Error("创建订单失败!", zap.Error(err))
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("创建订单失败", c)
 	} else {
 		response.OkWithData(gin.H{"order": order}, c)
 	}
@@ -38,6 +42,10 @@ func (a *ShopOrderApi) CancelOrder(c *gin.Context) {
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if err := shopOrderService.CancelOrder(orderNo, userID); err != nil {
 		global.GVA_LOG.Error("取消订单失败!", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
@@ -54,6 +62,10 @@ func (a *ShopOrderApi) ConfirmReceive(c *gin.Context) {
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if err := shopOrderService.ConfirmReceive(orderNo, userID); err != nil {
 		global.GVA_LOG.Error("确认收货失败!", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
@@ -66,10 +78,14 @@ func (a *ShopOrderApi) ConfirmReceive(c *gin.Context) {
 func (a *ShopOrderApi) GetUserOrderList(c *gin.Context) {
 	var pageInfo shopReq.ShopOrderSearch
 	if err := c.ShouldBindQuery(&pageInfo); err != nil {
-		response.FailWithMessage(err.Error(), c)
+		response.FailWithMessage("参数错误", c)
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if list, total, err := shopOrderService.GetUserOrderList(userID, pageInfo); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
@@ -91,6 +107,10 @@ func (a *ShopOrderApi) GetUserOrder(c *gin.Context) {
 		return
 	}
 	userID := utils.GetUserID(c)
+	if userID == 0 {
+		response.FailWithMessage("请先登录", c)
+		return
+	}
 	if order, err := shopOrderService.GetUserOrder(orderNo, userID); err != nil {
 		global.GVA_LOG.Error("查询失败!", zap.Error(err))
 		response.FailWithMessage("查询失败", c)

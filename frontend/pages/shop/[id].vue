@@ -25,7 +25,7 @@
           <div v-if="imageList.length > 1" class="mt-4 flex gap-3 overflow-x-auto pb-2">
             <div
               v-for="(img, idx) in imageList"
-              :key="idx"
+              :key="img || idx"
               class="h-20 w-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition-colors"
               :class="currentImage === img ? 'border-indigo-500' : 'border-gray-200 hover:border-gray-300'"
               @click="currentImage = img"
@@ -117,7 +117,7 @@
         <el-divider>
           <span class="text-lg font-semibold text-gray-700">商品详情</span>
         </el-divider>
-        <div class="prose mx-auto max-w-4xl mt-6" v-html="product.detail"></div>
+        <div class="prose mx-auto max-w-4xl mt-6" v-html="sanitizeHtml(product.detail)"></div>
       </div>
 
       <!-- Reviews section -->
@@ -145,6 +145,7 @@ import { getRelatedProducts } from '~/api/recommendation.js'
 import { useCartStore } from '~/stores/cartStore.js'
 import { useUserStore } from '~/stores/userStore.js'
 import { getUrl } from '~/utils/image.js'
+import { sanitizeHtml } from '~/utils/sanitize.js'
 
 const route = useRoute()
 const router = useRouter()

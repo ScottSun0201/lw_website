@@ -305,7 +305,9 @@ const handlePageChange = (page) => {
   currentPage.value = page
   updateQuery()
   fetchProducts()
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  if (process.client) {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 const toggleCategory = (id) => {
