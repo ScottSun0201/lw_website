@@ -2,6 +2,11 @@ package client
 
 import (
 	"errors"
+	"html"
+	"regexp"
+	"strings"
+	"unicode/utf8"
+
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/client"
 	clientReq "github.com/flipped-aurora/gin-vue-admin/server/model/client/request"
@@ -53,7 +58,7 @@ func (clientUserService *ClientUserService) SetClientUser(clientUser clientReq.S
 	db := global.GVA_DB.First(&client.ClientUser{}, "id = ?", clientUser.ID)
 
 	if clientUser.Nickname != "" {
-		db = db.Update("nickname", clientUser.Nickname)
+		db = db.Update("nickname", sanitizeText(clientUser.Nickname))
 	}
 
 	if clientUser.Avatar != "" {
@@ -65,18 +70,18 @@ func (clientUserService *ClientUserService) SetClientUser(clientUser clientReq.S
 	}
 
 	if clientUser.FirstName != "" {
-		db = db.Update("first_name", clientUser.FirstName)
+		db = db.Update("first_name", sanitizeText(clientUser.FirstName))
 	}
 
 	if clientUser.LastName != "" {
-		db = db.Update("last_name", clientUser.LastName)
+		db = db.Update("last_name", sanitizeText(clientUser.LastName))
 	}
 	if clientUser.Email != "" {
-		db = db.Update("email", clientUser.Email)
+		db = db.Update("email", strings.TrimSpace(clientUser.Email))
 	}
 
 	if clientUser.About != "" {
-		db = db.Update("about", clientUser.About)
+		db = db.Update("about", sanitizeText(clientUser.About))
 	}
 
 	if clientUser.Password != "" {
@@ -97,6 +102,15 @@ func (clientUserService *ClientUserService) GetClientUser(ID string) (clientUser
 // GetClientUserInfoList 分页获取客户端用户记录
 // Author [piexlmax](https://github.com/piexlmax)
 func (clientUserService *ClientUserService) GetClientUserInfoList(info clientReq.ClientUserSearch) (list []client.ClientUser, total int64, err error) {
+	if info.PageSize <= 0 {
+		info.PageSize = 10
+	}
+	if info.PageSize > 100 {
+		info.PageSize = 100
+	}
+	if info.Page <= 0 {
+		info.Page = 1
+	}
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	// 创建db
@@ -128,8 +142,25 @@ func (clientUserService *ClientUserService) GetClientUserInfoList(info clientReq
 	return clientUsers, total, err
 }
 
+// sanitizeText 转义HTML特殊字符，防止XSS
+func sanitizeText(s string) string {
+	return html.EscapeString(strings.TrimSpace(s))
+}
+
+// validateUsername 校验用户名格式
+var usernameRegex = regexp.MustCompile(`^[a-zA-Z0-9_]{3,30}$`)
+
 // 用户注册
 func (clientUserService *ClientUserService) Register(req clientReq.ClientUser) (err error, clientUser *client.ClientUser) {
+	// 校验用户名格式
+	if !usernameRegex.MatchString(req.Username) {
+		return errors.New("用户名只能包含字母、数字和下划线，长度3-30"), nil
+	}
+	// 校验密码强度
+	if utf8.RuneCountInString(req.Password) < 6 || utf8.RuneCountInString(req.Password) > 30 {
+		return errors.New("密码长度必须在6-30个字符之间"), nil
+	}
+
 	ferr := global.GVA_DB.First(&clientUser, "username = ?", req.Username).Error
 	if ferr == nil {
 		return errors.New("Username already exists"), nil
@@ -140,6 +171,9 @@ func (clientUserService *ClientUserService) Register(req clientReq.ClientUser) (
 	clientUser.Avatar = "https://qmplusimg.henrongyi.top/gva_header.jpg"
 	clientUser.Nickname = "NewUser—" + clientUser.UUID.String()[:8]
 	err = global.GVA_DB.Create(&clientUser).Error
+	if err == nil {
+		clientUser.Password = "" // 不返回密码哈希
+	}
 	return err, clientUser
 }
 
@@ -147,11 +181,12 @@ func (clientUserService *ClientUserService) Register(req clientReq.ClientUser) (
 func (clientUserService *ClientUserService) Login(req clientReq.ClientUser) (err error, clientUser *client.ClientUser) {
 	err = global.GVA_DB.Where("username = ?", req.Username).First(&clientUser).Error
 	if err != nil {
-		return errors.New("User not found"), nil
+		return errors.New("用户名或密码错误"), nil
 	}
 	if !utils.BcryptCheck(req.Password, clientUser.Password) {
-		return errors.New("密码错误"), nil
+		return errors.New("用户名或密码错误"), nil
 	}
+	clientUser.Password = "" // 不返回密码哈希
 	return nil, clientUser
 }
 

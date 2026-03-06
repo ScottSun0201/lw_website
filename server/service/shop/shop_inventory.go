@@ -180,18 +180,24 @@ func (s *ShopInventoryService) ReleaseStock(tx *gorm.DB, skuID uint, quantity in
 		return err
 	}
 
+	// 如果锁定库存不足，取实际可释放量（防止数据不一致导致取消失败）
+	releaseQty := quantity
 	if inventory.LockedStock < quantity {
-		return errors.New("锁定库存不足，无法释放")
+		releaseQty = inventory.LockedStock
+	}
+	if releaseQty <= 0 {
+		// 没有需要释放的锁定库存，跳过
+		return nil
 	}
 
 	beforeAvailable := inventory.AvailableStock
 
 	// 乐观锁释放：锁定库存减少，可用库存恢复
 	result := tx.Model(&shop.ShopInventory{}).
-		Where("sku_id = ? AND locked_stock >= ? AND version = ?", skuID, quantity, inventory.Version).
+		Where("sku_id = ? AND locked_stock >= ? AND version = ?", skuID, releaseQty, inventory.Version).
 		Updates(map[string]interface{}{
-			"locked_stock":    gorm.Expr("locked_stock - ?", quantity),
-			"available_stock": gorm.Expr("available_stock + ?", quantity),
+			"locked_stock":    gorm.Expr("locked_stock - ?", releaseQty),
+			"available_stock": gorm.Expr("available_stock + ?", releaseQty),
 			"version":         gorm.Expr("version + 1"),
 		})
 	if result.Error != nil {
@@ -206,15 +212,24 @@ func (s *ShopInventoryService) ReleaseStock(tx *gorm.DB, skuID uint, quantity in
 		SkuID:     skuID,
 		OrderNo:   orderNo,
 		Type:      4, // 释放
-		Quantity:  quantity,
+		Quantity:  releaseQty,
 		BeforeQty: beforeAvailable,
-		AfterQty:  beforeAvailable + quantity,
+		AfterQty:  beforeAvailable + releaseQty,
 	}
 	return tx.Create(&inventoryLog).Error
 }
 
 // GetInventoryList 分页获取库存列表
 func (s *ShopInventoryService) GetInventoryList(info shopReq.ShopInventorySearch) (list []shop.ShopInventory, total int64, err error) {
+	if info.PageSize <= 0 {
+		info.PageSize = 10
+	}
+	if info.PageSize > 100 {
+		info.PageSize = 100
+	}
+	if info.Page <= 0 {
+		info.Page = 1
+	}
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&shop.ShopInventory{})
@@ -246,6 +261,15 @@ func (s *ShopInventoryService) GetInventoryList(info shopReq.ShopInventorySearch
 
 // GetInventoryLogList 分页获取库存操作日志列表
 func (s *ShopInventoryService) GetInventoryLogList(info shopReq.ShopInventoryLogSearch) (list []shop.ShopInventoryLog, total int64, err error) {
+	if info.PageSize <= 0 {
+		info.PageSize = 10
+	}
+	if info.PageSize > 100 {
+		info.PageSize = 100
+	}
+	if info.Page <= 0 {
+		info.Page = 1
+	}
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&shop.ShopInventoryLog{})

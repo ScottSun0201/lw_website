@@ -15,6 +15,11 @@ type ShopCartService struct{}
 
 // AddToCart 添加商品到购物车
 func (s *ShopCartService) AddToCart(userID uint, req shopReq.ShopCartAddReq) error {
+	// 验证数量必须为正整数
+	if req.Quantity <= 0 {
+		return errors.New("商品数量必须大于0")
+	}
+
 	// 验证SKU是否存在且启用
 	var sku shop.ShopSku
 	if err := global.GVA_DB.Where("id = ?", req.SkuID).First(&sku).Error; err != nil {
@@ -86,6 +91,14 @@ func (s *ShopCartService) AddToCart(userID uint, req shopReq.ShopCartAddReq) err
 
 // UpdateCartQuantity 更新购物车商品数量
 func (s *ShopCartService) UpdateCartQuantity(userID uint, req shopReq.ShopCartUpdateReq) error {
+	// 验证数量必须为正整数
+	if req.Quantity <= 0 {
+		return errors.New("商品数量必须大于0")
+	}
+	if req.Quantity > 99 {
+		return errors.New("单个商品数量不能超过99")
+	}
+
 	// 验证购物车记录归属
 	var cart shop.ShopCart
 	if err := global.GVA_DB.Where("id = ? AND user_id = ?", req.ID, userID).First(&cart).Error; err != nil {

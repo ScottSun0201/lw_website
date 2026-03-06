@@ -52,6 +52,9 @@ func (s *ShopOrderService) CreateOrder(userID uint, req shopReq.ShopOrderCreateR
 		}
 	} else if req.SkuID > 0 && req.Quantity > 0 {
 		// 直接购买
+		if req.Quantity > 99 {
+			return order, fmt.Errorf("单个商品数量不能超过99")
+		}
 		buyItems = append(buyItems, buyItem{SkuID: req.SkuID, Quantity: req.Quantity})
 	} else {
 		return order, fmt.Errorf("请选择商品")
@@ -207,6 +210,15 @@ func (s *ShopOrderService) CreateOrder(userID uint, req shopReq.ShopOrderCreateR
 
 // GetOrderList 管理端获取订单列表（支持筛选，预加载Items）
 func (s *ShopOrderService) GetOrderList(info shopReq.ShopOrderSearch) (list []shop.ShopOrder, total int64, err error) {
+	if info.PageSize <= 0 {
+		info.PageSize = 10
+	}
+	if info.PageSize > 100 {
+		info.PageSize = 100
+	}
+	if info.Page <= 0 {
+		info.Page = 1
+	}
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&shop.ShopOrder{})
@@ -236,6 +248,15 @@ func (s *ShopOrderService) GetOrderList(info shopReq.ShopOrderSearch) (list []sh
 
 // GetUserOrderList 用户端获取订单列表
 func (s *ShopOrderService) GetUserOrderList(userID uint, info shopReq.ShopOrderSearch) (list []shop.ShopOrder, total int64, err error) {
+	if info.PageSize <= 0 {
+		info.PageSize = 10
+	}
+	if info.PageSize > 100 {
+		info.PageSize = 100
+	}
+	if info.Page <= 0 {
+		info.Page = 1
+	}
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&shop.ShopOrder{}).Where("user_id = ?", userID)

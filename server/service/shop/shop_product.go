@@ -171,6 +171,9 @@ func (s *ShopProductService) GetSpu(ID string) (spu shop.ShopSpu, err error) {
 
 // GetSpuList 分页获取商品SPU列表（管理端）
 func (s *ShopProductService) GetSpuList(info shopReq.ShopSpuSearch) (list []shop.ShopSpu, total int64, err error) {
+	if info.PageSize <= 0 { info.PageSize = 10 }
+	if info.PageSize > 100 { info.PageSize = 100 }
+	if info.Page <= 0 { info.Page = 1 }
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&shop.ShopSpu{})
@@ -275,6 +278,9 @@ func (s *ShopProductService) checkOnlineCondition(spu *shop.ShopSpu) error {
 
 // GetClientProductList 获取客户端商品列表（仅上架商品）
 func (s *ShopProductService) GetClientProductList(info shopReq.ShopSpuSearch) (list []shop.ShopSpu, total int64, err error) {
+	if info.PageSize <= 0 { info.PageSize = 10 }
+	if info.PageSize > 100 { info.PageSize = 100 }
+	if info.Page <= 0 { info.Page = 1 }
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Model(&shop.ShopSpu{}).Where("status = ?", 1)

@@ -178,13 +178,16 @@ func (clientUserApi *ClientUserApi) GetClientUserList(c *gin.Context) {
 	}
 }
 
-// Register 客户端用户登录
+// Register 客户端用户注册
 func (clientUserApi *ClientUserApi) Register(c *gin.Context) {
 	var L clientReq.ClientUser
-	_ = c.ShouldBindJSON(&L)
+	if err := c.ShouldBindJSON(&L); err != nil {
+		response.FailWithMessage("参数错误", c)
+		return
+	}
 	if err, user := clientUserService.Register(L); err != nil {
 		global.GVA_LOG.Error("注册失败!", zap.Any("err", err))
-		response.FailWithMessage("注册失败,"+err.Error(), c)
+		response.FailWithMessage(err.Error(), c)
 	} else {
 		clientUserApi.TokenNext(c, *user)
 	}
@@ -193,10 +196,13 @@ func (clientUserApi *ClientUserApi) Register(c *gin.Context) {
 // Login 客户端用户登录
 func (clientUserApi *ClientUserApi) Login(c *gin.Context) {
 	var L clientReq.ClientUser
-	_ = c.ShouldBindJSON(&L)
+	if err := c.ShouldBindJSON(&L); err != nil {
+		response.FailWithMessage("参数错误", c)
+		return
+	}
 	if err, user := clientUserService.Login(L); err != nil {
-		global.GVA_LOG.Error("注册失败!", zap.Any("err", err))
-		response.FailWithMessage("注册失败,"+err.Error(), c)
+		global.GVA_LOG.Error("登录失败!", zap.Any("err", err))
+		response.FailWithMessage("用户名或密码错误", c)
 	} else {
 		clientUserApi.TokenNext(c, *user)
 	}
@@ -207,7 +213,7 @@ func (clientUserApi *ClientUserApi) GetUserInfo(c *gin.Context) {
 	id := utils.GetUserID(c)
 	if err, user := clientUserService.GetUserInfo(id); err != nil {
 		global.GVA_LOG.Error("获取个人信息失败!", zap.Any("err", err))
-		response.FailWithMessage("获取个人信息失败,"+err.Error(), c)
+		response.FailWithMessage("获取个人信息失败", c)
 	} else {
 		response.OkWithData(user, c)
 	}

@@ -18,6 +18,9 @@ func (s *ShopFavoriteService) RemoveFavorite(userID, spuID uint) error {
 }
 
 func (s *ShopFavoriteService) GetFavoriteList(userID uint, info shopReq.ShopFavoriteSearch) (list []shop.ShopSpu, total int64, err error) {
+	if info.PageSize <= 0 { info.PageSize = 10 }
+	if info.PageSize > 100 { info.PageSize = 100 }
+	if info.Page <= 0 { info.Page = 1 }
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	subQuery := global.GVA_DB.Model(&shop.ShopFavorite{}).Select("spu_id").Where("user_id = ?", userID)
