@@ -7,9 +7,8 @@ import (
 
 type ShopAddressRouter struct{}
 
-func (s *ShopAddressRouter) InitShopAddressRouter(PublicRouter *gin.RouterGroup) {
-	// 地址管理全部需要登录，走 PublicGroup 但通过 x-token 获取用户ID
-	shopAddressRouter := PublicRouter.Group("shopAddress")
+func (s *ShopAddressRouter) InitShopAddressRouter(ClientPrivateRouter *gin.RouterGroup) {
+	shopAddressRouter := ClientPrivateRouter.Group("shopAddress")
 	var api = v1.ApiGroupApp.ShopApiGroup.ShopAddressApi
 	{
 		shopAddressRouter.POST("createAddress", api.CreateAddress)

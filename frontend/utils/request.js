@@ -1,19 +1,23 @@
 import { ElMessage,ElMessageBox } from 'element-plus';
-import cookie from 'js-cookie'
 import {useRouter } from 'vue-router'
+import {useUserStore} from "~/stores/userStore.js";
 
 //请求体封装
 function useGetFetchOptions(options={}) {
-  let token = ""
   const config = useRuntimeConfig()
-  if (process.client) {
-    token = cookie.get('x-token') || ''
-  }
   options.baseURL = options?.baseURL ?? config.public.baseURL
   options.headers = {
     ...options.headers,
-    'x-token':token,
   }
+  // SSR 时从请求头转发 cookie，客户端由浏览器自动携带
+  if (process.server) {
+    const nuxtApp = useNuxtApp()
+    const cookieHeader = nuxtApp.ssrContext?.event?.node?.req?.headers?.cookie
+    if (cookieHeader) {
+      options.headers['cookie'] = cookieHeader
+    }
+  }
+  options.credentials = 'include' // 浏览器自动携带 HttpOnly cookie
   options.initialCache = options.initialCache ?? false
   options.lazy = options.lazy ?? false
 
@@ -39,8 +43,7 @@ export async function request(url,options) {
 
         if (err.status === 401){
             ElMessageBox.confirm(`
-          <p>无效的令牌</p>
-          <p>错误码:<span style="color:red"> 401 </span>错误信息:${err}</p>
+          <p>登录已过期，请重新登录</p>
           `, '身份信息', {
                 dangerouslyUseHTMLString: true,
                 distinguishCancelAndClose: true,
@@ -48,7 +51,8 @@ export async function request(url,options) {
                 cancelButtonText: '取消'
             })
                 .then(() => {
-                    cookie.set("x-token", "")
+                    const userStore = useUserStore()
+                    userStore.clearLocal()
                     router.push({ name: 'login', replace: true })
                 })
             return

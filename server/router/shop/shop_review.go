@@ -8,7 +8,7 @@ import (
 
 type ShopReviewRouter struct{}
 
-func (s *ShopReviewRouter) InitShopReviewRouter(Router *gin.RouterGroup, PublicRouter *gin.RouterGroup) {
+func (s *ShopReviewRouter) InitShopReviewRouter(Router *gin.RouterGroup, PublicRouter *gin.RouterGroup, ClientPrivateRouter *gin.RouterGroup) {
 	shopReviewRouter := Router.Group("shopReview").Use(middleware.OperationRecord())
 	var api = v1.ApiGroupApp.ShopApiGroup.ShopReviewApi
 	{
@@ -17,11 +17,17 @@ func (s *ShopReviewRouter) InitShopReviewRouter(Router *gin.RouterGroup, PublicR
 		shopReviewRouter.PUT("replyReview", api.ReplyReview)
 	}
 
+	// 公开路由（无需登录即可查看评价）
 	shopReviewPublicRouter := PublicRouter.Group("shopReview")
 	{
-		shopReviewPublicRouter.POST("createReview", api.CreateReview)
 		shopReviewPublicRouter.GET("getProductReviews", api.GetProductReviews)
 		shopReviewPublicRouter.GET("getReviewStat", api.GetReviewStat)
-		shopReviewPublicRouter.GET("getMyReviews", api.GetMyReviews)
+	}
+
+	// 客户端路由（需要 JWT 认证）
+	shopReviewClientRouter := ClientPrivateRouter.Group("shopReview")
+	{
+		shopReviewClientRouter.POST("createReview", api.CreateReview)
+		shopReviewClientRouter.GET("getMyReviews", api.GetMyReviews)
 	}
 }

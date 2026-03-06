@@ -7,8 +7,8 @@ import (
 
 type ShopCartRouter struct{}
 
-func (s *ShopCartRouter) InitShopCartRouter(PublicRouter *gin.RouterGroup) {
-	shopCartRouter := PublicRouter.Group("shopCart")
+func (s *ShopCartRouter) InitShopCartRouter(ClientPrivateRouter *gin.RouterGroup) {
+	shopCartRouter := ClientPrivateRouter.Group("shopCart")
 	var api = v1.ApiGroupApp.ShopApiGroup.ShopCartApi
 	{
 		shopCartRouter.POST("addToCart", api.AddToCart)

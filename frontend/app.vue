@@ -8,25 +8,14 @@ import { ref,watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {findClientSEO} from "~/api/base.js";
 import {useSeoStore} from "~/stores/seoStore.js";
-import cookie from "js-cookie";
 const layout = ref('default')
 const route = useRoute()
 const seoStore = useSeoStore()
 const userStore = useUserStore()
 
-const savedToken = cookie.get('x-token') || ''
-if (savedToken) {
-  try {
-    const payload = JSON.parse(atob(savedToken.split('.')[1]))
-    if (payload.exp && payload.exp * 1000 < Date.now()) {
-      cookie.remove('x-token')
-    } else {
-      userStore.setToken(savedToken)
-    }
-  } catch (e) {
-    userStore.setToken(savedToken)
-  }
-}
+// HttpOnly cookie 无法通过 JS 读取，通过调用 getUserInfo 接口判断登录状态
+// cookie 由浏览器自动携带，后端会自动验证
+await userStore.checkAuth()
 
 const withOutLayoutPaths = ['login','register']
 // 这里创建白名单用于layout的变化，例如本示例中的登录页不需要layout
@@ -53,7 +42,6 @@ useServerSeoMeta({
 })
 
 seoStore.setSeo(data.value)
-
 
 
 </script>

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import {getUserInfo, jsonInBlacklist} from "~/api/base.js";
-import cookie from "js-cookie";
 import {useRouter} from "vue-router";
 
 export const useUserStore = defineStore('user', () => {
@@ -20,27 +19,39 @@ export const useUserStore = defineStore('user', () => {
 
     const getInfo = async () =>{
         const res =  await getUserInfo()
-        if(res.code === 0){
+        if(res && res.code === 0){
             userInfo.value = res.data
         }
     }
 
-    let infoAbort = null
-    const setToken = (newToken) => {
-        if (infoAbort) {
-            infoAbort = null
+    // 通过调用 getUserInfo 检查登录状态（HttpOnly cookie 由浏览器自动携带）
+    const checkAuth = async () => {
+        try {
+            const res = await getUserInfo()
+            if (res && res.code === 0) {
+                token.value = 'authenticated'
+                userInfo.value = res.data
+            }
+        } catch (e) {
+            // 未登录或 token 无效
         }
+    }
+
+    const setToken = (newToken) => {
         token.value = newToken
         if (newToken) {
-            infoAbort = true
-            getInfo().finally(() => { infoAbort = null })
+            getInfo()
         }
+    }
+
+    const clearLocal = () => {
+        token.value = ''
+        userInfo.value = { username: '', nickname: '', about: '', avatar: '', firstName: '', lastName: '', email: '' }
     }
 
     const logout = async () => {
         const res = await jsonInBlacklist()
-        if(res.code === 0){
-            cookie.remove('x-token')
+        if(res && res.code === 0){
             token.value = ''
             userInfo.value = { username: '', nickname: '', about: '', avatar: '', firstName: '', lastName: '', email: '' }
             router.push({name: 'index'})
@@ -52,6 +63,8 @@ export const useUserStore = defineStore('user', () => {
         token,
         setToken,
         getInfo,
+        checkAuth,
+        clearLocal,
         logout
     }
 })

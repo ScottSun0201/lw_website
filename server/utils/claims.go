@@ -20,10 +20,10 @@ func ClearToken(c *gin.Context) {
 
 	if net.ParseIP(host) != nil {
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("x-token", "", -1, "/", "", true, false)
+		c.SetCookie("x-token", "", -1, "/", "", true, true)
 	} else {
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("x-token", "", -1, "/", host, true, false)
+		c.SetCookie("x-token", "", -1, "/", host, true, true)
 	}
 }
 
@@ -36,10 +36,10 @@ func SetToken(c *gin.Context, token string, maxAge int) {
 
 	if net.ParseIP(host) != nil {
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("x-token", token, maxAge, "/", "", true, false)
+		c.SetCookie("x-token", token, maxAge, "/", "", true, true)
 	} else {
 		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("x-token", token, maxAge, "/", host, true, false)
+		c.SetCookie("x-token", token, maxAge, "/", host, true, true)
 	}
 }
 

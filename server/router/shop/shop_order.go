@@ -8,7 +8,7 @@ import (
 
 type ShopOrderRouter struct{}
 
-func (s *ShopOrderRouter) InitShopOrderRouter(Router *gin.RouterGroup, PublicRouter *gin.RouterGroup) {
+func (s *ShopOrderRouter) InitShopOrderRouter(Router *gin.RouterGroup, ClientPrivateRouter *gin.RouterGroup) {
 	// 管理端路由（需要后台管理员权限）
 	shopOrderRouter := Router.Group("shopOrder").Use(middleware.OperationRecord())
 	var api = v1.ApiGroupApp.ShopApiGroup.ShopOrderApi
@@ -20,13 +20,13 @@ func (s *ShopOrderRouter) InitShopOrderRouter(Router *gin.RouterGroup, PublicRou
 		shopOrderRouter.GET("getOrderLogs", api.GetOrderLogs)
 	}
 
-	// 客户端路由（通过 x-token 获取用户ID）
-	shopOrderPublicRouter := PublicRouter.Group("shopOrder")
+	// 客户端路由（需要 JWT 认证）
+	shopOrderClientRouter := ClientPrivateRouter.Group("shopOrder")
 	{
-		shopOrderPublicRouter.POST("createOrder", api.CreateOrder)
-		shopOrderPublicRouter.PUT("cancelOrder", api.CancelOrder)
-		shopOrderPublicRouter.PUT("confirmReceive", api.ConfirmReceive)
-		shopOrderPublicRouter.GET("getUserOrderList", api.GetUserOrderList)
-		shopOrderPublicRouter.GET("getUserOrder", api.GetUserOrder)
+		shopOrderClientRouter.POST("createOrder", api.CreateOrder)
+		shopOrderClientRouter.PUT("cancelOrder", api.CancelOrder)
+		shopOrderClientRouter.PUT("confirmReceive", api.ConfirmReceive)
+		shopOrderClientRouter.GET("getUserOrderList", api.GetUserOrderList)
+		shopOrderClientRouter.GET("getUserOrder", api.GetUserOrder)
 	}
 }

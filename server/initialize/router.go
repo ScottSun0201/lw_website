@@ -61,8 +61,10 @@ func Routers() *gin.Engine {
 
 	PublicGroup := Router.Group(global.GVA_CONFIG.System.RouterPrefix)
 	PrivateGroup := Router.Group(global.GVA_CONFIG.System.RouterPrefix)
+	ClientPrivateGroup := Router.Group(global.GVA_CONFIG.System.RouterPrefix)
 
 	PrivateGroup.Use(middleware.JWTAuth()).Use(middleware.CasbinHandler())
+	ClientPrivateGroup.Use(middleware.JWTAuth()) // JWT认证但无Casbin，用于客户端已登录用户路由
 
 	{
 		// 健康监测
@@ -104,7 +106,7 @@ func Routers() *gin.Engine {
 		}
 		{
 			clientRouter := router.RouterGroupApp.Client
-			clientRouter.InitClientUserRouter(PrivateGroup, PublicGroup)
+			clientRouter.InitClientUserRouter(PrivateGroup, PublicGroup, ClientPrivateGroup)
 			clientRouter.InitClientSEORouter(PrivateGroup, PublicGroup)
 			clientRouter.InitClientAboutRouter(PrivateGroup, PublicGroup)
 		}
@@ -114,15 +116,15 @@ func Routers() *gin.Engine {
 			shopRouter.InitShopBrandRouter(PrivateGroup, PublicGroup)
 			shopRouter.InitShopProductRouter(PrivateGroup, PublicGroup)
 			shopRouter.InitShopInventoryRouter(PrivateGroup)
-			shopRouter.InitShopAddressRouter(PublicGroup)
-			shopRouter.InitShopCartRouter(PublicGroup)
-			shopRouter.InitShopOrderRouter(PrivateGroup, PublicGroup)
-			shopRouter.InitShopPaymentRouter(PrivateGroup, PublicGroup)
-			shopRouter.InitShopNotificationRouter(PrivateGroup, PublicGroup)
-			shopRouter.InitShopReviewRouter(PrivateGroup, PublicGroup)
-			shopRouter.InitShopCouponRouter(PrivateGroup, PublicGroup)
-			shopRouter.InitShopRefundRouter(PrivateGroup, PublicGroup)
-			shopRouter.InitShopFavoriteRouter(PublicGroup)
+			shopRouter.InitShopAddressRouter(ClientPrivateGroup)
+			shopRouter.InitShopCartRouter(ClientPrivateGroup)
+			shopRouter.InitShopOrderRouter(PrivateGroup, ClientPrivateGroup)
+			shopRouter.InitShopPaymentRouter(PrivateGroup, ClientPrivateGroup)
+			shopRouter.InitShopNotificationRouter(PrivateGroup, ClientPrivateGroup)
+			shopRouter.InitShopReviewRouter(PrivateGroup, PublicGroup, ClientPrivateGroup)
+			shopRouter.InitShopCouponRouter(PrivateGroup, PublicGroup, ClientPrivateGroup)
+			shopRouter.InitShopRefundRouter(PrivateGroup, ClientPrivateGroup)
+			shopRouter.InitShopFavoriteRouter(ClientPrivateGroup)
 			shopRouter.InitShopLogisticsRouter(PrivateGroup, PublicGroup)
 			shopRouter.InitShopInventoryAlertRouter(PrivateGroup)
 			shopRouter.InitShopRecommendationRouter(PrivateGroup, PublicGroup)

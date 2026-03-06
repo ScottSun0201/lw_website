@@ -8,7 +8,7 @@ import (
 
 type ShopRefundRouter struct{}
 
-func (s *ShopRefundRouter) InitShopRefundRouter(Router *gin.RouterGroup, PublicRouter *gin.RouterGroup) {
+func (s *ShopRefundRouter) InitShopRefundRouter(Router *gin.RouterGroup, ClientPrivateRouter *gin.RouterGroup) {
 	shopRefundRouter := Router.Group("shopRefund").Use(middleware.OperationRecord())
 	var api = v1.ApiGroupApp.ShopApiGroup.ShopRefundApi
 	{
@@ -16,12 +16,14 @@ func (s *ShopRefundRouter) InitShopRefundRouter(Router *gin.RouterGroup, PublicR
 		shopRefundRouter.PUT("auditRefund", api.AuditRefund)
 		shopRefundRouter.PUT("confirmReturn", api.ConfirmReturn)
 	}
-	shopRefundPublicRouter := PublicRouter.Group("shopRefund")
+
+	// 客户端路由（需要 JWT 认证）
+	shopRefundClientRouter := ClientPrivateRouter.Group("shopRefund")
 	{
-		shopRefundPublicRouter.POST("createRefund", api.CreateRefund)
-		shopRefundPublicRouter.PUT("shipReturn", api.ShipReturn)
-		shopRefundPublicRouter.PUT("cancelRefund", api.CancelRefund)
-		shopRefundPublicRouter.GET("getUserRefunds", api.GetUserRefunds)
-		shopRefundPublicRouter.GET("getRefundDetail", api.GetRefundDetail)
+		shopRefundClientRouter.POST("createRefund", api.CreateRefund)
+		shopRefundClientRouter.PUT("shipReturn", api.ShipReturn)
+		shopRefundClientRouter.PUT("cancelRefund", api.CancelRefund)
+		shopRefundClientRouter.GET("getUserRefunds", api.GetUserRefunds)
+		shopRefundClientRouter.GET("getRefundDetail", api.GetRefundDetail)
 	}
 }

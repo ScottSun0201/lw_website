@@ -7,7 +7,7 @@ import (
 
 type ShopNotificationRouter struct{}
 
-func (s *ShopNotificationRouter) InitShopNotificationRouter(Router *gin.RouterGroup, PublicRouter *gin.RouterGroup) {
+func (s *ShopNotificationRouter) InitShopNotificationRouter(Router *gin.RouterGroup, ClientPrivateRouter *gin.RouterGroup) {
 	shopNotificationRouter := Router.Group("shopNotification")
 	var api = v1.ApiGroupApp.ShopApiGroup.ShopNotificationApi
 	{
@@ -17,11 +17,12 @@ func (s *ShopNotificationRouter) InitShopNotificationRouter(Router *gin.RouterGr
 		shopNotificationRouter.GET("getAdminUnreadCount", api.GetAdminUnreadCount)
 	}
 
-	shopNotificationPublicRouter := PublicRouter.Group("shopNotification")
+	// 客户端路由（需要 JWT 认证）
+	shopNotificationClientRouter := ClientPrivateRouter.Group("shopNotification")
 	{
-		shopNotificationPublicRouter.GET("getMyNotifications", api.GetMyNotifications)
-		shopNotificationPublicRouter.PUT("markRead", api.MarkRead)
-		shopNotificationPublicRouter.PUT("markAllRead", api.MarkAllRead)
-		shopNotificationPublicRouter.GET("getUnreadCount", api.GetUnreadCount)
+		shopNotificationClientRouter.GET("getMyNotifications", api.GetMyNotifications)
+		shopNotificationClientRouter.PUT("markRead", api.MarkRead)
+		shopNotificationClientRouter.PUT("markAllRead", api.MarkAllRead)
+		shopNotificationClientRouter.GET("getUnreadCount", api.GetUnreadCount)
 	}
 }

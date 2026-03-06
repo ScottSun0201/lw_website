@@ -50,6 +50,7 @@ import {login} from "~/api/base.js";
 import {useUserStore} from "~/stores/userStore.js";
 import bg from "~/assets/image/bg.jpg";
 import {useSeoStore} from "~/stores/seoStore.js";
+import {getUrl} from "~/utils/image.js";
 const formInfo = ref({
   username:"",
   password:""
